@@ -1,0 +1,72 @@
+<section class="p-6">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <h2 class="text-xl font-bold">🗂️ Quản lý danh mục</h2>
+
+    <div class="flex items-center gap-2">
+      <input [(ngModel)]="keyword" (keyup.enter)="searchNow()"
+             placeholder="Tìm theo tên / slug..." class="w-64 border rounded px-3 py-2" />
+      <select [(ngModel)]="enabled" (change)="searchNow()" class="border rounded px-2 py-2">
+        <option value="">Tất cả</option>
+        <option value="true">Enabled</option>
+        <option value="false">Disabled</option>
+      </select>
+      <a routerLink="/dashboard/categories/new" class="px-4 py-2 bg-blue-600 text-white rounded">+ Thêm mới</a>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto border rounded bg-white">
+    <table class="w-full min-w-[1000px] border-collapse">
+      <thead>
+        <tr class="bg-slate-50 text-left text-sm">
+          <th class="p-3 border cursor-pointer" (click)="changeSort('id')">ID</th>
+          <th class="p-3 border cursor-pointer" (click)="changeSort('name')">Tên</th>
+          <th class="p-3 border cursor-pointer" (click)="changeSort('slug')">Slug</th>
+          <th class="p-3 border">Mô tả</th>
+          <th class="p-3 border">TT</th>
+          <th class="p-3 border cursor-pointer" (click)="changeSort('createdAt')">Tạo</th>
+          <th class="p-3 border cursor-pointer" (click)="changeSort('updatedAt')">Cập nhật</th>
+          <th class="p-3 border">Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="loading"><td colspan="8" class="p-6 text-center text-slate-500">Đang tải...</td></tr>
+
+        <tr *ngFor="let c of data" class="hover:bg-slate-50">
+          <td class="p-3 border">{{ c.id }}</td>
+          <td class="p-3 border font-medium">{{ c.name }}</td>
+          <td class="p-3 border font-mono text-sm">{{ c.slug }}</td>
+          <td class="p-3 border text-sm text-slate-700">{{ c.description || '—' }}</td>
+          <td class="p-3 border">
+            <button (click)="toggleEnabled(c)" class="px-2 py-0.5 rounded text-xs"
+                    [class.bg-green-100]="c.enabled" [class.text-green-700]="c.enabled"
+                    [class.bg-red-100]="!c.enabled" [class.text-red-700]="!c.enabled">
+              {{ c.enabled ? 'On' : 'Off' }}
+            </button>
+          </td>
+          <td class="p-3 border text-sm text-slate-600">{{ c.createdAt | date:'HH:mm dd/MM/yyyy' }}</td>
+          <td class="p-3 border text-sm text-slate-600">{{ c.updatedAt | date:'HH:mm dd/MM/yyyy' }}</td>
+          <td class="p-3 border space-x-3 whitespace-nowrap">
+            <a [routerLink]="['/dashboard','categories','edit', c.id]" class="text-blue-600 hover:underline">Sửa</a>
+            <button (click)="delete(c.id!)" class="text-red-600 hover:underline">Xoá</button>
+          </td>
+        </tr>
+
+        <tr *ngIf="!loading && !data.length">
+          <td colspan="8" class="p-6 text-center text-slate-500">Không có dữ liệu</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+    <div class="text-sm text-slate-600">Tổng: <b>{{ totalElements }}</b> — Trang {{ page+1 }}/{{ totalPages || 1 }}</div>
+    <div class="flex items-center gap-2">
+      <label class="text-sm">Page size:</label>
+      <select [(ngModel)]="size" (change)="page=0; load()" class="border rounded px-2 py-1">
+        <option [ngValue]="10">10</option><option [ngValue]="20">20</option><option [ngValue]="50">50</option>
+      </select>
+      <button class="px-3 py-1.5 border rounded" (click)="gotoPage(page-1)" [disabled]="page<=0">← Prev</button>
+      <button class="px-3 py-1.5 border rounded" (click)="gotoPage(page+1)" [disabled]="page+1>=totalPages">Next →</button>
+    </div>
+  </div>
+</section>

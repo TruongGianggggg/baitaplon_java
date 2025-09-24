@@ -1,0 +1,12 @@
+<div class="min-h-screen flex flex-col">
+  <!-- Navbar -->
+  <app-navbar *ngIf="!isAdmin()" />
+
+  <!-- Nội dung chính sẽ chiếm hết khoảng trống còn lại -->
+  <main class="flex-1">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Footer luôn ở cuối -->
+  <app-footer *ngIf="!isAdmin()" />
+</div>

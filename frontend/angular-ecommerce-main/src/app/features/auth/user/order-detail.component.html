@@ -1,0 +1,59 @@
+<section class="max-w-4xl mx-auto mt-8 p-6 bg-white border rounded-2xl">
+  <div class="flex items-center justify-between gap-4">
+    <h1 class="text-2xl font-bold">Chi tiết đơn hàng</h1>
+    <a routerLink="/orders" class="text-sm text-blue-600 hover:underline">← Quay lại danh sách</a>
+  </div>
+
+  <div *ngIf="loading()" class="mt-6 text-gray-600">Đang tải...</div>
+
+  <div *ngIf="!loading() && error()" class="mt-6 p-3 bg-red-50 text-red-700 rounded">
+    {{ error() }}
+  </div>
+
+  <div *ngIf="!loading() && !error() && order() as o" class="mt-6 space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <div class="text-gray-500 text-sm">Mã đơn</div>
+        <div class="font-medium">#{{ o.id }}</div>
+      </div>
+      <div>
+        <div class="text-gray-500 text-sm">Ngày tạo</div>
+        <div class="font-medium">{{ createdAt() | date:'short' }}</div>
+      </div>
+      <div>
+        <div class="text-gray-500 text-sm">Trạng thái</div>
+        <div class="font-medium">{{ status() }}</div>
+      </div>
+      <div>
+        <div class="text-gray-500 text-sm">Tổng tiền</div>
+        <div class="font-medium">{{ total() | currency:'VND':'symbol':'1.0-0' }}</div>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <h2 class="font-semibold mb-2">Sản phẩm</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full border rounded-lg">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-3 border-b text-left">Tên SP</th>
+              <th class="px-4 py-3 border-b text-right">Đơn giá</th>
+              <th class="px-4 py-3 border-b text-right">SL</th>
+              <th class="px-4 py-3 border-b text-right">Thành tiền</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let it of items()" class="hover:bg-gray-50">
+              <td class="px-4 py-3 border-b">
+                {{ it?.productName ?? it?.name ?? ('SP #' + (it?.productId ?? '')) }}
+              </td>
+              <td class="px-4 py-3 border-b text-right">{{ itemPrice(it) | currency:'VND' }}</td>
+              <td class="px-4 py-3 border-b text-right">{{ itemQty(it) }}</td>
+              <td class="px-4 py-3 border-b text-right">{{ (itemPrice(it) * itemQty(it)) | currency:'VND' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,40 @@
+<section class="p-6 max-w-2xl mx-auto">
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-2xl font-bold">{{ isEdit ? '✏️ Sửa danh mục' : '➕ Thêm danh mục' }}</h2>
+    <a routerLink="/dashboard/categories" class="px-3 py-2 rounded-lg border bg-white hover:bg-slate-50">← Quay lại</a>
+  </div>
+
+  <form [formGroup]="fm" (ngSubmit)="submit()" class="space-y-4 bg-white p-4 border rounded-xl">
+    <div class="grid md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">Tên *</label>
+        <input class="w-full border rounded px-3 py-2" placeholder="Điện thoại" formControlName="name">
+        <p class="text-xs text-red-600 mt-1" *ngIf="hasErr('name')">Tên là bắt buộc</p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Slug *</label>
+        <input class="w-full border rounded px-3 py-2 font-mono" placeholder="dien-thoai" formControlName="slug">
+        <p class="text-xs text-red-600 mt-1" *ngIf="hasErr('slug')">Slug là bắt buộc</p>
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium mb-1">Mô tả</label>
+      <textarea rows="4" class="w-full border rounded px-3 py-2" formControlName="description"
+        placeholder="Hàng điện thoại chính hãng..."></textarea>
+    </div>
+
+    <label class="inline-flex items-center gap-2">
+      <input type="checkbox" formControlName="enabled" class="scale-110">
+      <span>Enabled</span>
+    </label>
+
+    <div class="flex items-center justify-end gap-3">
+      <a routerLink="/dashboard/categories" class="px-4 py-2 rounded-lg border bg-white hover:bg-slate-50">Hủy</a>
+      <button type="submit" [disabled]="submitting"
+              class="px-5 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60">
+        {{ submitting ? 'Đang lưu...' : (isEdit ? 'Cập nhật' : 'Tạo mới') }}
+      </button>
+    </div>
+  </form>
+</section>

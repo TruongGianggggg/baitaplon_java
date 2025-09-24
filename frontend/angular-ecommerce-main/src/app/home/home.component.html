@@ -1,0 +1,259 @@
+<section class="max-w-screen-xl mx-auto p-4 md:p-6 space-y-8 md:space-y-12">
+
+  <!-- ===== Banner: Modern gradient overlay design ===== -->
+  <ng-container *ngIf="banners.length; else noBanner">
+    <div class="relative overflow-hidden rounded-3xl shadow-2xl bg-gradient-to-br from-slate-900 to-slate-700"
+         [style.aspect-ratio]="bannerAspect"
+         [style.--fade-ms]="FADE_MS + 'ms'">
+
+      <!-- Background blur layer -->
+      <img
+        [src]="banners[bannerIndex]?.src"
+        alt=""
+        aria-hidden="true"
+        class="absolute inset-0 w-full h-full object-cover blur-3xl scale-125 opacity-30"
+      />
+
+      <!-- Main banner images with smooth transitions -->
+      <ng-container *ngFor="let b of banners; index as i">
+        <div class="absolute inset-0 flex items-center justify-center">
+          <img
+            [src]="b.src"
+            [alt]="b.alt || ''"
+            class="w-full h-full object-contain select-none pointer-events-none
+                   transition-all ease-out duration-700 z-10"
+            [ngClass]="{
+              'opacity-100 scale-100': i === bannerIndex,
+              'opacity-0 scale-105': i !== bannerIndex
+            }"
+            [style.filter]="i === bannerIndex ? 'drop-shadow(0 25px 50px rgba(0,0,0,0.15))' : 'blur(1px)'"
+            [style.animation]="i === bannerIndex && bannerKenBurns ? 'kenburns 20s ease-in-out infinite alternate' : null"
+            draggable="false"
+          />
+        </div>
+      </ng-container>
+
+      <!-- Gradient overlay for better text contrast -->
+      <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent z-[5]"></div>
+
+      <!-- Banner link -->
+      <a class="absolute inset-0 z-[15] group cursor-pointer"
+         [routerLink]="banners[bannerIndex]?.href || '/c/all'"
+         aria-label="Open banner">
+        <!-- Hover effect overlay -->
+        <div class="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+      </a>
+
+      <!-- Modern navigation buttons -->
+      <button
+        type="button"
+        class="absolute left-4 md:left-6 top-1/2 -translate-y-1/2
+               w-12 h-12 md:w-14 md:h-14 grid place-items-center
+               rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm
+               border border-white/20 hover:border-white/40 z-20
+               transition-all duration-200 active:scale-95 hover:scale-110
+               text-white text-xl md:text-2xl font-light"
+        (click)="nextBanner(-1)"
+        [disabled]="animating"
+        aria-label="Previous banner"
+      >‹</button>
+
+      <button
+        type="button"
+        class="absolute right-4 md:right-6 top-1/2 -translate-y-1/2
+               w-12 h-12 md:w-14 md:h-14 grid place-items-center
+               rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm
+               border border-white/20 hover:border-white/40 z-20
+               transition-all duration-200 active:scale-95 hover:scale-110
+               text-white text-xl md:text-2xl font-light"
+        (click)="nextBanner(+1)"
+        [disabled]="animating"
+        aria-label="Next banner"
+      >›</button>
+
+      <!-- Modern indicator dots -->
+      <div class="absolute bottom-4 md:bottom-6 left-0 right-0 flex items-center justify-center gap-2 z-20">
+        <button
+          type="button"
+          *ngFor="let b of banners; index as i"
+          class="relative transition-all duration-300 hover:scale-125"
+          (click)="goBanner(i)"
+          [attr.aria-label]="'Go to banner ' + (i+1)"
+        >
+          <div class="w-8 h-2 md:w-10 md:h-2.5 rounded-full backdrop-blur-sm border border-white/30"
+               [ngClass]="{
+                 'bg-white shadow-lg': bannerIndex===i,
+                 'bg-white/20 hover:bg-white/40': bannerIndex!==i
+               }">
+          </div>
+        </button>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Fallback loading state -->
+  <ng-template #noBanner>
+    <div class="rounded-3xl bg-gradient-to-br from-slate-100 to-slate-200 animate-pulse shadow-lg"
+         style="aspect-ratio: 21 / 9;">
+      <div class="flex items-center justify-center h-full">
+        <div class="w-16 h-16 border-4 border-slate-300 border-t-slate-500 rounded-full animate-spin"></div>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- ===== Categories Section ===== -->
+  <div class="space-y-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-1 h-8 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"></div>
+        <h2 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
+          Danh mục sản phẩm
+        </h2>
+      </div>
+      <a routerLink="/c/all"
+         class="group flex items-center gap-2 px-4 py-2 rounded-full
+                bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100
+                text-blue-600 hover:text-blue-700 transition-all duration-200
+                border border-blue-200/50 hover:border-blue-300/50">
+        <span class="text-sm md:text-base font-medium">Xem tất cả</span>
+        <span class="transform group-hover:translate-x-1 transition-transform duration-200">→</span>
+      </a>
+    </div>
+
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30
+                border border-slate-200/60 shadow-xl p-6 md:p-8">
+      <!-- Decorative background elements -->
+      <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-emerald-400/10 to-blue-400/10 rounded-full blur-2xl"></div>
+
+      <!-- Category grid -->
+      <div class="relative grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
+        <a
+          *ngFor="let c of cats; trackBy: trackByCat"
+          [routerLink]="['/c', c.id]"
+          class="group relative overflow-hidden flex items-center justify-center gap-2 px-4 py-3 md:py-4
+                 rounded-2xl bg-white/70 hover:bg-white border border-slate-200/50 hover:border-slate-300/70
+                 text-sm md:text-base font-medium transition-all duration-200
+                 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]
+                 backdrop-blur-sm"
+        >
+          <!-- Hover gradient background -->
+          <div class="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-purple-50/50 opacity-0
+                      group-hover:opacity-100 transition-opacity duration-200 rounded-2xl"></div>
+
+          <span class="relative truncate text-slate-700 group-hover:text-slate-900 transition-colors duration-200">
+            {{ c.name }}
+          </span>
+          <span class="relative opacity-0 group-hover:opacity-100 transition-all duration-200
+                       text-slate-400 group-hover:text-blue-500 transform translate-x-1 group-hover:translate-x-0">
+            →
+          </span>
+        </a>
+      </div>
+
+      <!-- Status indicator -->
+      <div class="mt-6 flex items-center justify-center gap-3 text-xs text-slate-500">
+        <div class="flex items-center gap-2">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span>Danh mục được cập nhật tự động mỗi giờ</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Latest Products Section ===== -->
+  <div class="space-y-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="text-2xl md:text-3xl">🆕</div>
+        <h2 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
+          Sản phẩm mới nhất
+        </h2>
+      </div>
+      <a routerLink="/c/all"
+         class="group flex items-center gap-2 px-4 py-2 rounded-full
+                bg-gradient-to-r from-emerald-50 to-blue-50 hover:from-emerald-100 hover:to-blue-100
+                text-emerald-600 hover:text-emerald-700 transition-all duration-200
+                border border-emerald-200/50 hover:border-emerald-300/50">
+        <span class="text-sm md:text-base font-medium">Xem thêm</span>
+        <span class="transform group-hover:translate-x-1 transition-transform duration-200">→</span>
+      </a>
+    </div>
+
+    <app-home-product-loading *ngIf="loadingNewest"></app-home-product-loading>
+    <div *ngIf="!loadingNewest"
+         class="grid gap-4 md:gap-6 grid-cols-2 md:grid-cols-4 auto-rows-fr">
+      <app-home-product *ngFor="let p of newest; trackBy: trackByProd" [product]="p"></app-home-product>
+    </div>
+  </div>
+
+  <!-- ===== Category Sections ===== -->
+  <ng-container *ngFor="let sec of catSections; trackBy: trackBySection">
+    <div class="space-y-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-1 h-6 bg-gradient-to-b from-purple-500 to-pink-600 rounded-full"></div>
+          <h3 class="text-xl md:text-2xl font-bold text-slate-900">{{ sec.cat.name }}</h3>
+        </div>
+        <a class="group flex items-center gap-2 px-3 py-1.5 rounded-full
+                  bg-purple-50 hover:bg-purple-100 text-purple-600 hover:text-purple-700
+                  transition-all duration-200 text-sm md:text-base font-medium
+                  border border-purple-200/50 hover:border-purple-300/50"
+           [routerLink]="['/c', sec.cat.id]">
+          <span>Xem tất cả</span>
+          <span class="transform group-hover:translate-x-1 transition-transform duration-200">→</span>
+        </a>
+      </div>
+
+      <app-home-product-loading *ngIf="sec.loading"></app-home-product-loading>
+
+      <div *ngIf="!sec.loading"
+           class="grid gap-4 md:gap-6 grid-cols-2 md:grid-cols-4 auto-rows-fr">
+        <app-home-product *ngFor="let p of sec.items; trackBy: trackByProd" [product]="p"></app-home-product>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Enhanced Ken Burns Animation -->
+  <style>
+    @keyframes kenburns {
+      0%   { transform: scale(1.00) translateX(-0.5%) translateY(0) rotate(0deg); }
+      25%  { transform: scale(1.02) translateX(0.3%) translateY(-0.3%) rotate(0.1deg); }
+      50%  { transform: scale(1.03) translateX(0) translateY(-0.5%) rotate(0deg); }
+      75%  { transform: scale(1.02) translateX(-0.3%) translateY(-0.2%) rotate(-0.1deg); }
+      100% { transform: scale(1.00) translateX(0.5%) translateY(0) rotate(0deg); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      img[style*="kenburns"],
+      .animate-ping,
+      .animate-pulse,
+      .animate-spin {
+        animation: none !important;
+      }
+    }
+
+    /* Custom scrollbar for webkit browsers */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(to bottom, #cbd5e1, #94a3b8);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(to bottom, #94a3b8, #64748b);
+    }
+  </style>
+</section>

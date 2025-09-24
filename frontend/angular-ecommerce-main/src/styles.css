@@ -1,0 +1,13 @@
+@import "tailwindcss";
+@import "flowbite/src/themes/default";
+@plugin "flowbite/plugin";
+@plugin "flowbite-typography";
+@source "../node_modules/flowbite";
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+
+.cdk-overlay-backdrop.cdk-overlay-backdrop-showing { background: rgba(0,0,0,.45); }
+.cdk-overlay-pane { border-radius: 16px; overflow: hidden; }
+
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

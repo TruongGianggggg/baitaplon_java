@@ -1,0 +1,216 @@
+<section class="p-6 space-y-4">
+  <!-- Toast (render khi visible) -->
+  <div *ngIf="toastVisible"
+       class="fixed right-4 top-4 z-[9999] transition-all duration-300 ease-in-out translate-x-0 opacity-100">
+    <div class="min-w-[240px] max-w-[360px] px-3 py-2 rounded shadow text-white text-sm"
+         [ngClass]="{
+            'bg-green-600': toastType==='success',
+            'bg-rose-600': toastType==='error',
+            'bg-slate-800': toastType==='info'
+         }">
+      {{ toastMsg }}
+    </div>
+  </div>
+
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <h2 class="text-xl font-bold">📦 Quản lý sản phẩm</h2>
+
+    <div class="flex items-center gap-2">
+      <a routerLink="/dashboard/products/new"
+         class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:opacity-90">+ Thêm mới</a>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white border rounded-xl p-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-3">
+      <input [(ngModel)]="keyword" (keyup.enter)="searchNow()"
+             placeholder="Tìm theo tên / SKU / slug..."
+             class="border rounded-lg px-3 py-2">
+
+      <select [(ngModel)]="categoryId" class="border rounded-lg px-3 py-2">
+        <option [ngValue]="undefined">— Tất cả danh mục —</option>
+        <option *ngFor="let c of categories" [ngValue]="c.id">{{ c.name }}</option>
+      </select>
+
+      <select [(ngModel)]="enabled" class="border rounded-lg px-3 py-2">
+        <option [ngValue]="undefined">— Trạng thái —</option>
+        <option [ngValue]="true">On</option>
+        <option [ngValue]="false">Off</option>
+      </select>
+
+      <select [(ngModel)]="inStock" class="border rounded-lg px-3 py-2">
+        <option [ngValue]="undefined">— Tồn kho —</option>
+        <option [ngValue]="true">Còn hàng (&gt; 0)</option>
+        <option [ngValue]="false">Hết hàng (≤ 0)</option>
+      </select>
+
+      <input [(ngModel)]="minPrice" type="number" min="0" placeholder="Giá tối thiểu"
+             class="border rounded-lg px-3 py-2">
+      <input [(ngModel)]="maxPrice" type="number" min="0" placeholder="Giá tối đa"
+             class="border rounded-lg px-3 py-2">
+    </div>
+
+    <div class="mt-3 flex flex-wrap items-center gap-2">
+      <button (click)="searchNow()"
+              class="px-3 py-2 rounded-lg border bg-white hover:bg-slate-50">Tìm</button>
+      <button (click)="clearFilters()"
+              class="px-3 py-2 rounded-lg border bg-white hover:bg-slate-50">Xoá lọc</button>
+
+      <div class="ml-auto flex items-center gap-2">
+        <label class="text-sm">Sắp xếp:</label>
+        <select [(ngModel)]="sort" (change)="page=0; load()" class="border rounded px-2 py-1">
+          <option value="id,desc">ID ↓</option>
+          <option value="id,asc">ID ↑</option>
+          <option value="name,asc">Tên ↑</option>
+          <option value="name,desc">Tên ↓</option>
+          <option value="price,asc">Giá ↑</option>
+          <option value="price,desc">Giá ↓</option>
+          <option value="stock,asc">Kho ↑</option>
+          <option value="stock,desc">Kho ↓</option>
+          <option value="createdAt,desc">Tạo ↓</option>
+          <option value="createdAt,asc">Tạo ↑</option>
+          <option value="updatedAt,desc">Cập nhật ↓</option>
+          <option value="updatedAt,asc">Cập nhật ↑</option>
+        </select>
+
+        <label class="text-sm">Page size:</label>
+        <select [(ngModel)]="size" (change)="page=0; load()" class="border rounded px-2 py-1">
+          <option [ngValue]="10">10</option>
+          <option [ngValue]="20">20</option>
+          <option [ngValue]="50">50</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="overflow-x-auto border rounded-xl bg-white">
+    <table class="w-full min-w-[1100px] border-collapse">
+      <thead>
+        <tr class="bg-slate-50 text-left text-sm">
+          <th class="p-3 border cursor-pointer" (click)="changeSort('id')">ID</th>
+          <th class="p-3 border">Ảnh</th>
+          <th class="p-3 border cursor-pointer" (click)="changeSort('name')">Tên / SKU / Slug</th>
+          <th class="p-3 border">Danh mục</th>
+          <th class="p-3 border cursor-pointer" (click)="changeSort('price')">Giá</th>
+          <th class="p-3 border cursor-pointer" (click)="changeSort('stock')">Kho</th>
+          <th class="p-3 border">TT</th>
+          <th class="p-3 border">Chi tiết ảnh</th>
+          <th class="p-3 border cursor-pointer" (click)="changeSort('createdAt')">Tạo</th>
+          <th class="p-3 border cursor-pointer" (click)="changeSort('updatedAt')">Cập nhật</th>
+          <th class="p-3 border">Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="loading">
+          <td colspan="11" class="p-6 text-center text-slate-500">Đang tải...</td>
+        </tr>
+
+        <tr *ngIf="!loading && error">
+          <td colspan="11" class="p-6 text-center text-rose-600">{{ error }}</td>
+        </tr>
+
+        <tr *ngFor="let p of data; trackBy: trackById" class="hover:bg-slate-50 align-top">
+          <td class="p-3 border">{{ p.id }}</td>
+
+          <td class="p-3 border">
+            <div class="w-16 h-16 bg-slate-100 rounded overflow-hidden grid place-content-center">
+              <img *ngIf="p.coverImage"
+                   [src]="getImageUrl(p.coverImage!)"
+                   class="w-full h-full object-cover" alt="cover">
+              <span *ngIf="!p.coverImage" class="text-xs text-slate-400">No img</span>
+            </div>
+          </td>
+
+          <td class="p-3 border">
+            <div class="font-medium">{{ p.name }}</div>
+            <div class="text-xs text-slate-500">SKU: <span class="font-mono">{{ p.sku }}</span></div>
+            <div class="text-xs text-slate-500">Slug: <span class="font-mono">{{ p.slug }}</span></div>
+            <div class="text-xs text-slate-500 mt-1 line-clamp-2" *ngIf="p.description">{{ p.description }}</div>
+          </td>
+
+          <td class="p-3 border">{{ p.category?.name || '—' }}</td>
+
+          <td class="p-3 border">
+            <div class="font-medium">{{ fmtMoney(p.price, p.currency) }}</div>
+            <div *ngIf="p.previousPrice && p.previousPrice > p.price" class="text-xs text-slate-500 mt-0.5">
+              <s>{{ fmtMoney(p.previousPrice!, p.currency) }}</s>
+              <span class="ml-1 px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700"
+                    *ngIf="percentOff(p)">
+                -{{ percentOff(p) }}
+              </span>
+            </div>
+          </td>
+
+          <td class="p-3 border">{{ p.stock }}</td>
+
+          <td class="p-3 border">
+            <span class="px-2 py-0.5 rounded text-xs"
+                  [class.bg-green-100]="p.enabled"
+                  [class.text-green-700]="p.enabled"
+                  [class.bg-red-100]="!p.enabled"
+                  [class.text-red-700]="!p.enabled">
+              {{ p.enabled ? 'On' : 'Off' }}
+            </span>
+          </td>
+
+          <td class="p-3 border">
+            <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-xs">
+              {{ detailsCount(p) }} ảnh
+            </span>
+          </td>
+
+          <td class="p-3 border text-sm text-slate-600">{{ fmtDate(p.createdAt) }}</td>
+          <td class="p-3 border text-sm text-slate-600">{{ fmtDate(p.updatedAt) }}</td>
+
+          <td class="p-3 border whitespace-nowrap space-x-3">
+            <a [routerLink]="['/dashboard','products','edit', p.id]"
+               class="text-blue-600 hover:underline">Sửa</a>
+            <button (click)="openDeleteModal(p.id!)" class="text-red-600 hover:underline">Xoá</button>
+          </td>
+        </tr>
+
+        <tr *ngIf="!loading && !error && !data.length">
+          <td colspan="11" class="p-6 text-center text-slate-500">Chưa có sản phẩm nào</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="text-sm text-slate-600">
+      Tổng: <b>{{ totalElements }}</b> — Trang {{ page + 1 }}/{{ totalPages || 1 }}
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button class="px-3 py-1.5 border rounded disabled:opacity-50"
+              (click)="gotoPage(page - 1)" [disabled]="page <= 0">← Prev</button>
+      <button class="px-3 py-1.5 border rounded disabled:opacity-50"
+              (click)="gotoPage(page + 1)" [disabled]="page + 1 >= totalPages">Next →</button>
+    </div>
+  </div>
+
+  <!-- Modal Xoá -->
+  <div *ngIf="showDeleteModal" class="fixed inset-0 z-[999]">
+    <div class="absolute inset-0 bg-black/50" (click)="closeDeleteModal()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="bg-white rounded-lg shadow-xl w-[360px] max-w-full p-5 animate-[fadeIn_.18s_ease]">
+        <h3 class="text-lg font-semibold mb-2">Xác nhận xoá</h3>
+        <p class="text-sm text-slate-600 mb-4">
+          Bạn có chắc chắn muốn xoá sản phẩm này? Hành động này không thể hoàn tác.
+        </p>
+        <div class="flex justify-end gap-2">
+          <button (click)="closeDeleteModal()"
+                  class="px-3 py-1.5 rounded border bg-white hover:bg-slate-50">Huỷ</button>
+          <button (click)="confirmDelete()"
+                  [disabled]="deletingLoading"
+                  class="px-3 py-1.5 rounded bg-red-600 text-white disabled:opacity-60 hover:bg-red-700">
+            {{ deletingLoading ? 'Đang xoá…' : 'Xoá' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

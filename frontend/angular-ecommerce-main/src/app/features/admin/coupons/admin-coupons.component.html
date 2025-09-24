@@ -1,0 +1,226 @@
+<section class="p-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between gap-4">
+    <h1 class="text-2xl font-bold">Quản lý mã giảm giá</h1>
+    <button type="button"
+            (click)="newCoupon()"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700">
+      + Tạo mã
+    </button>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="mt-4 flex items-center gap-3">
+    <input class="border rounded px-3 py-2 w-80"
+           placeholder="Tìm code / tên..."
+           [(ngModel)]="q" />
+    <button type="button"
+            (click)="load()"
+            class="px-3 py-2 border rounded bg-white hover:bg-gray-50">
+      ↻ Làm mới
+    </button>
+  </div>
+
+  <!-- Table -->
+  <div class="mt-6 overflow-auto border rounded-lg bg-white">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-3 py-2 text-left">Code</th>
+          <th class="px-3 py-2 text-left">Tên</th>
+          <th class="px-3 py-2">Loại</th>
+          <th class="px-3 py-2">Giá trị</th>
+          <th class="px-3 py-2">Hiệu lực</th>
+          <th class="px-3 py-2">TT</th>
+          <th class="px-3 py-2 w-40"></th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let c of filtered; trackBy: trackByCouponId" class="border-t">
+          <td class="px-3 py-2 font-mono">{{ c.code }}</td>
+          <td class="px-3 py-2">{{ c.name }}</td>
+
+          <td class="px-3 py-2 text-center">{{ c.discountType }}</td>
+
+          <!-- Giá trị (ép kiểu sang number bằng dấu +) -->
+          <td class="px-3 py-2 text-right">
+            <ng-container *ngIf="c.discountType === 'PERCENT'; else fixedTpl">
+              {{ c.discountValue }}%
+              <span *ngIf="c.maxDiscountAmount">
+                (trần {{ +c.maxDiscountAmount! | number:'1.0-0' }})
+              </span>
+            </ng-container>
+            <ng-template #fixedTpl>
+              {{ +c.discountValue | number:'1.0-0' }}
+            </ng-template>
+          </td>
+
+          <!-- Hiệu lực -->
+          <td class="px-3 py-2 text-center text-xs">
+            <div *ngIf="c.startsAt">Từ: {{ c.startsAt | date:'short' }}</div>
+            <div *ngIf="c.endsAt">Đến: {{ c.endsAt | date:'short' }}</div>
+          </td>
+
+          <!-- Trạng thái -->
+          <td class="px-3 py-2 text-center">
+            <span class="px-2 py-1 rounded text-xs"
+                  [class.bg-green-100]="c.enabled"
+                  [class.text-green-700]="c.enabled"
+                  [class.bg-gray-100]="!c.enabled"
+                  [class.text-gray-600]="!c.enabled">
+              {{ c.enabled ? 'Bật' : 'Tắt' }}
+            </span>
+          </td>
+
+          <!-- Actions -->
+          <td class="px-3 py-2 text-right">
+            <button type="button"
+                    class="px-3 py-1 border rounded mr-2 bg-white hover:bg-gray-50"
+                    (click)="edit(c)">Sửa</button>
+            <button type="button"
+                    class="px-3 py-1 border rounded text-red-600 bg-white hover:bg-red-50"
+                    (click)="remove(c)">Xoá</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Trạng thái loading / empty -->
+    <div *ngIf="loading" class="p-4 text-center text-sm text-slate-500">Đang tải...</div>
+    <div *ngIf="!loading && filtered.length === 0" class="p-4 text-center text-sm text-slate-500">
+      Không có mã giảm giá nào.
+    </div>
+  </div>
+</section>
+
+<!-- ========= Modal Overlay (Form nổi) ========= -->
+<div *ngIf="showForm"
+     class="fixed inset-0 z-50 flex items-center justify-center">
+  <!-- backdrop -->
+  <div class="absolute inset-0 bg-black/40" (click)="cancel()"></div>
+
+  <!-- panel -->
+  <div class="relative bg-white w-full max-w-4xl rounded-2xl shadow-xl border p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-semibold">
+        {{ editing ? 'Sửa mã giảm giá' : 'Tạo mã giảm giá' }}
+      </h2>
+      <button type="button"
+              class="px-3 py-1 border rounded"
+              (click)="cancel()">Đóng</button>
+    </div>
+
+    <form [formGroup]="fm" (ngSubmit)="save()" class="grid md:grid-cols-3 gap-4">
+      <!-- Code -->
+      <div class="md:col-span-1">
+        <label class="block text-sm mb-1">Code *</label>
+        <input class="w-full border rounded px-3 py-2" formControlName="code" />
+        <div class="mt-1 text-xs text-red-600"
+             *ngIf="fm.get('code')?.invalid && fm.get('code')?.touched">
+          Code bắt buộc, tối đa 64 ký tự
+        </div>
+      </div>
+
+      <!-- Tên -->
+      <div class="md:col-span-1">
+        <label class="block text-sm mb-1">Tên</label>
+        <input class="w-full border rounded px-3 py-2" formControlName="name" />
+      </div>
+
+      <!-- Bật/Tắt -->
+      <div class="md:col-span-1">
+        <label class="block text-sm mb-1">Bật/Tắt</label>
+        <select class="w-full border rounded px-3 py-2" formControlName="enabled">
+          <option [ngValue]="true">Bật</option>
+          <option [ngValue]="false">Tắt</option>
+        </select>
+      </div>
+
+      <!-- Loại -->
+      <div>
+        <label class="block text-sm mb-1">Loại *</label>
+        <select class="w-full border rounded px-3 py-2" formControlName="discountType">
+          <option value="PERCENT">PERCENT (%)</option>
+          <option value="FIXED">FIXED (số tiền)</option>
+        </select>
+      </div>
+
+      <!-- Giá trị (string nhưng hiển thị number input ok) -->
+      <div>
+        <label class="block text-sm mb-1">Giá trị *</label>
+        <input type="number" class="w-full border rounded px-3 py-2" formControlName="discountValue" />
+      </div>
+
+      <!-- Trần giảm -->
+      <div>
+        <label class="block text-sm mb-1">Trần giảm</label>
+        <input type="number" class="w-full border rounded px-3 py-2" formControlName="maxDiscountAmount" />
+      </div>
+
+      <!-- Đơn tối thiểu -->
+      <div>
+        <label class="block text-sm mb-1">Đơn tối thiểu</label>
+        <input type="number" class="w-full border rounded px-3 py-2" formControlName="minOrderAmount" />
+      </div>
+
+      <!-- Target -->
+      <div>
+        <label class="block text-sm mb-1">Target</label>
+        <select class="w-full border rounded px-3 py-2" formControlName="targetType">
+          <option value="ALL">ALL</option>
+          <option value="CATEGORY">CATEGORY</option>
+          <option value="PRODUCT">PRODUCT</option>
+        </select>
+      </div>
+
+      <!-- Stackable -->
+      <div>
+        <label class="block text-sm mb-1">Stackable</label>
+        <select class="w-full border rounded px-3 py-2" formControlName="stackable">
+          <option [ngValue]="false">Không</option>
+          <option [ngValue]="true">Có</option>
+        </select>
+      </div>
+
+      <!-- Thời gian -->
+      <div>
+        <label class="block text-sm mb-1">Bắt đầu</label>
+        <input type="datetime-local" class="w-full border rounded px-3 py-2" formControlName="startsAt" />
+      </div>
+
+      <div>
+        <label class="block text-sm mb-1">Kết thúc</label>
+        <input type="datetime-local" class="w-full border rounded px-3 py-2" formControlName="endsAt" />
+      </div>
+
+      <!-- Limits -->
+      <div>
+        <label class="block text-sm mb-1">Tổng lượt</label>
+        <input type="number" class="w-full border rounded px-3 py-2" formControlName="totalQuantity" />
+      </div>
+
+      <div>
+        <label class="block text-sm mb-1">Giới hạn/1 user</label>
+        <input type="number" class="w-full border rounded px-3 py-2" formControlName="perUserLimit" />
+      </div>
+
+      <!-- Mô tả -->
+      <div class="md:col-span-3">
+        <label class="block text-sm mb-1">Mô tả</label>
+        <textarea rows="3" class="w-full border rounded px-3 py-2" formControlName="description"></textarea>
+      </div>
+
+      <!-- Actions -->
+      <div class="md:col-span-3 flex justify-end gap-2 pt-2">
+        <button type="button"
+                class="px-4 py-2 border rounded bg-white hover:bg-gray-50"
+                (click)="cancel()">Huỷ</button>
+        <button class="px-4 py-2 bg-green-600 text-white rounded-lg disabled:opacity-60"
+                [disabled]="loading">
+          {{ loading ? 'Đang lưu...' : 'Lưu' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,21 @@
+<!-- src/app/payment/payment-success/payment-success.component.html -->
+<div class="max-w-xl mx-auto mt-20 border rounded-2xl p-6 text-center">
+  <ng-container *ngIf="loading; else done">
+    <div class="animate-pulse text-gray-600">Đang xác thực thanh toán VNPAY...</div>
+  </ng-container>
+
+  <ng-template #done>
+    <ng-container *ngIf="!error; else errBlock">
+      <h2 class="text-xl font-semibold mb-2">Xác thực xong!</h2>
+      <p class="text-gray-600">
+        Hệ thống đang chuyển bạn sang trang xác nhận đơn hàng...
+      </p>
+    </ng-container>
+
+    <ng-template #errBlock>
+      <h2 class="text-xl font-semibold text-rose-600 mb-2">Thanh toán thất bại</h2>
+      <p class="mb-4">{{ error }}</p>
+      <a routerLink="/cart" class="px-4 py-2 border rounded">Quay lại giỏ hàng</a>
+    </ng-template>
+  </ng-template>
+</div>

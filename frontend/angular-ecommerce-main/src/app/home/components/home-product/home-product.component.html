@@ -1,0 +1,38 @@
+<!-- src/app/home/components/home-product/home-product.component.html -->
+<div class="border rounded-lg p-4 shadow-sm bg-white hover:shadow-md transition">
+  <!-- Ảnh -> link chi tiết -->
+  <a [routerLink]="['/products', product.id]">
+    <img
+      [src]="imageSrc()"
+      (error)="onImgError($event)"
+      alt="{{ product.name }}"
+      class="h-40 w-full object-cover mb-3 rounded"
+      loading="lazy"
+      referrerpolicy="no-referrer"
+    />
+  </a>
+
+  <!-- Tên -> link chi tiết -->
+  <a
+    [routerLink]="['/products', product.id]"
+    class="block font-semibold line-clamp-2 mb-1 hover:text-emerald-600"
+  >
+    {{ product.name }}
+  </a>
+
+  <!-- Giá -->
+  <div class="text-sm text-slate-600 mb-3">
+    <ng-container *ngIf="product?.price !== null && product?.price !== undefined; else noPrice">
+      {{ product.price | currency:'VND':'symbol-narrow':'1.0-0' }}
+    </ng-container>
+    <ng-template #noPrice>Liên hệ</ng-template>
+  </div>
+
+  <!-- Nút thêm giỏ -->
+  <button
+    (click)="addToCart()"
+    class="w-full h-10 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
+  >
+    Thêm vào giỏ
+  </button>
+</div>

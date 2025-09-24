@@ -1,0 +1,109 @@
+<section class="p-6 max-w-screen-md mx-auto">
+  <h2 class="text-xl font-bold mb-4">
+    {{ isEdit ? '✏️ Sửa sản phẩm' : '➕ Thêm sản phẩm' }}
+  </h2>
+
+  <!-- Toast slide-in (render khi visible, không có chấm đen) -->
+  <div *ngIf="toastVisible"
+       class="fixed right-4 top-4 z-[9999] transition-all duration-300 ease-in-out translate-x-0 opacity-100">
+    <div class="min-w-[240px] max-w-[360px] px-3 py-2 rounded shadow text-white text-sm"
+         [ngClass]="{
+            'bg-green-600': toastType==='success',
+            'bg-rose-600': toastType==='error',
+            'bg-slate-800': toastType==='info'
+         }">
+      {{ toastMsg }}
+    </div>
+  </div>
+
+  <!-- Alerts inline (nếu cần giữ lại lâu) -->
+  <div *ngIf="successMsg" class="mb-3 px-3 py-2 rounded bg-green-50 text-green-700 border border-green-200">
+    {{ successMsg }}
+  </div>
+  <div *ngIf="errorMsg" class="mb-3 px-3 py-2 rounded bg-rose-50 text-rose-700 border border-rose-200">
+    {{ errorMsg }}
+  </div>
+
+  <form [formGroup]="fm" (ngSubmit)="submit()" class="grid gap-3 bg-white border rounded-xl p-4">
+    <div>
+      <input class="border rounded px-3 py-2 w-full" placeholder="Tên" formControlName="name">
+      <div class="text-xs text-rose-600 mt-1" *ngIf="fm.get('name')?.touched && fm.get('name')?.invalid">
+        Vui lòng nhập tên (≥ 2 ký tự).
+      </div>
+    </div>
+
+    <div>
+      <input class="border rounded px-3 py-2 w-full" placeholder="Slug" formControlName="slug">
+      <div class="text-xs text-rose-600 mt-1" *ngIf="fm.get('slug')?.touched && fm.get('slug')?.invalid">
+        Vui lòng nhập slug.
+      </div>
+    </div>
+
+    <div>
+      <input class="border rounded px-3 py-2 w-full" placeholder="SKU" formControlName="sku">
+      <div class="text-xs text-rose-600 mt-1" *ngIf="fm.get('sku')?.touched && fm.get('sku')?.invalid">
+        Vui lòng nhập SKU.
+      </div>
+    </div>
+
+    <div>
+      <input class="border rounded px-3 py-2 w-full" type="number" placeholder="Giá" formControlName="price">
+      <div class="text-xs text-rose-600 mt-1" *ngIf="fm.get('price')?.touched && fm.get('price')?.invalid">
+        Giá phải ≥ 0.
+      </div>
+    </div>
+
+    <textarea class="border rounded px-3 py-2 w-full" placeholder="Mô tả" formControlName="description"></textarea>
+
+    <!-- Danh mục -->
+    <div>
+      <select class="border rounded px-3 py-2 w-full" formControlName="categoryId">
+        <option [ngValue]="0" disabled>— Chọn danh mục —</option>
+        <option *ngFor="let c of categories" [ngValue]="c.id">{{ c.name }}</option>
+      </select>
+      <div class="text-xs text-slate-500 mt-1" *ngIf="loadingCats">Đang tải danh mục…</div>
+      <div class="text-xs text-rose-600 mt-1"
+           *ngIf="fm.get('categoryId')?.touched && fm.get('categoryId')?.invalid">
+        Vui lòng chọn danh mục hợp lệ.
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <label class="flex items-center gap-2">
+        <input type="checkbox" formControlName="enabled"> Enabled
+      </label>
+
+      <div>
+        <input class="border rounded px-3 py-2 w-32" type="number" placeholder="Stock" formControlName="stock">
+        <div class="text-xs text-rose-600 mt-1" *ngIf="fm.get('stock')?.touched && fm.get('stock')?.invalid">
+          Tồn kho phải ≥ 0.
+        </div>
+      </div>
+
+      <div>
+        <input class="border rounded px-3 py-2 w-32" placeholder="Currency" formControlName="currency">
+        <div class="text-xs text-rose-600 mt-1" *ngIf="fm.get('currency')?.touched && fm.get('currency')?.invalid">
+          Vui lòng nhập tiền tệ (ví dụ: VND).
+        </div>
+      </div>
+    </div>
+
+    <div class="grid gap-2">
+      <label class="text-sm">Ảnh cover</label>
+      <input type="file" (change)="onCover($event)">
+    </div>
+
+    <div class="grid gap-2">
+      <label class="text-sm">Ảnh chi tiết</label>
+      <input type="file" multiple (change)="onDetails($event)">
+    </div>
+
+    <button
+      class="mt-2 px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
+      type="submit"
+      [disabled]="submitting || fm.invalid"
+    >
+      {{ submitting ? (isEdit ? 'Đang cập nhật…' : 'Đang tạo…') : (isEdit ? 'Cập nhật' : 'Tạo mới') }}
+    </button>
+  </form>
+</section>

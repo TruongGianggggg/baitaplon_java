@@ -1,0 +1,56 @@
+<section class="max-w-3xl mx-auto mt-6 p-6 bg-white rounded-xl border">
+  <h2 class="text-xl font-bold mb-4">Thông tin đặt hàng</h2>
+
+  <form [formGroup]="fm" (ngSubmit)="submit()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label class="block text-sm mb-1">Họ tên</label>
+      <input class="w-full border rounded px-3 py-2" formControlName="receiverName">
+    </div>
+    <div>
+      <label class="block text-sm mb-1">Số điện thoại</label>
+      <input class="w-full border rounded px-3 py-2" formControlName="receiverPhone">
+    </div>
+
+    <div class="md:col-span-2">
+      <label class="block text-sm mb-1">Địa chỉ</label>
+      <input class="w-full border rounded px-3 py-2" formControlName="shipAddressLine1" placeholder="Số nhà, đường...">
+    </div>
+
+    <div>
+      <label class="block text-sm mb-1">Phường/Xã</label>
+      <input class="w-full border rounded px-3 py-2" formControlName="shipWard">
+    </div>
+    <div>
+      <label class="block text-sm mb-1">Quận/Huyện</label>
+      <input class="w-full border rounded px-3 py-2" formControlName="shipDistrict">
+    </div>
+    <div>
+      <label class="block text-sm mb-1">Tỉnh/Thành</label>
+      <input class="w-full border rounded px-3 py-2" formControlName="shipCity">
+    </div>
+    <div>
+      <label class="block text-sm mb-1">Mã bưu điện</label>
+      <input class="w-full border rounded px-3 py-2" formControlName="shipPostalCode">
+    </div>
+
+    <div>
+      <label class="block text-sm mb-1">Mã giảm giá</label>
+      <input class="w-full border rounded px-3 py-2" formControlName="couponCode" placeholder="VD: SALE10">
+    </div>
+
+    <div>
+      <label class="block text-sm mb-1">Phương thức thanh toán</label>
+      <select class="w-full border rounded px-3 py-2" formControlName="paymentMethod">
+        <option value="COD">COD (Thanh toán khi nhận)</option>
+        <option value="VNPAY">VNPAY</option>
+      </select>
+    </div>
+
+    <div class="md:col-span-2 flex items-center gap-3 mt-2">
+      <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded" [disabled]="loading">
+        {{ loading ? 'Đang xử lý...' : 'Xác nhận đặt hàng' }}
+      </button>
+      <span class="text-red-600 text-sm" *ngIf="error">{{ error }}</span>
+    </div>
+  </form>
+</section>

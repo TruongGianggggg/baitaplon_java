@@ -1,0 +1,179 @@
+<section class="p-6">
+  <div class="flex items-center justify-between">
+    <h2 class="text-xl font-semibold">Quản lý đơn hàng</h2>
+    <button class="px-3 py-2 rounded border" (click)="load()">↻ Làm mới</button>
+  </div>
+
+  <div *ngIf="errorMsg" class="mt-3 text-sm text-rose-600">
+    {{ errorMsg }}
+  </div>
+
+  <!-- thống kê -->
+  <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3" *ngIf="userStats.size > 0">
+    <div *ngFor="let entry of userStats | keyvalue">
+      <div class="border rounded p-3">
+        <div class="text-xs text-gray-500">User ID</div>
+        <div class="font-semibold">#{{ entry.key }}</div>
+        <div class="mt-2 text-sm">Số đơn: <b>{{ entry.value.count }}</b></div>
+        <div class="text-sm">
+          Tổng: <b>{{ entry.value.totalAmount | currency:'VND':'symbol':'1.0-0' }}</b>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- bảng đơn hàng -->
+  <div class="mt-5 border rounded overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-3 py-2 text-left w-20">ID</th>
+          <th class="px-3 py-2 text-left">User</th>
+          <th class="px-3 py-2 text-right">Tổng</th>
+          <th class="px-3 py-2 text-right">Giảm</th>
+          <th class="px-3 py-2 text-left">Thanh toán</th>
+          <th class="px-3 py-2 text-left">Trạng thái</th>
+          <th class="px-3 py-2 text-right">Tổng SL</th>
+          <th class="px-3 py-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="loadingList">
+          <td colspan="8" class="px-3 py-3 text-center">Đang tải...</td>
+        </tr>
+
+        <tr *ngFor="let o of orders; trackBy: trackByOrderId" class="border-t">
+          <td class="px-3 py-2">#{{ o.id }}</td>
+
+          <!-- User: #userId + tên hoặc email -->
+          <td class="px-3 py-2">
+            User #{{ o.userId || '—' }}
+            <div class="text-xs text-gray-500" *ngIf="o.userFullName || o.userEmail">
+              {{ o.userFullName || o.userEmail }}
+            </div>
+          </td>
+
+          <td class="px-3 py-2 text-right">
+            {{ moneyStrToNum(o.totalAmount) | currency:'VND':'symbol':'1.0-0' }}
+          </td>
+          <td class="px-3 py-2 text-right">
+            {{ moneyStrToNum(o.discountAmount) | currency:'VND':'symbol':'1.0-0' }}
+          </td>
+          <td class="px-3 py-2">{{ o.paymentMethod || '—' }}</td>
+          <td class="px-3 py-2">
+            <span class="px-2 py-0.5 rounded text-xs" [ngClass]="statusClass(o.status)">
+              {{ o.status || '—' }}
+            </span>
+          </td>
+
+          <!-- Tổng SL: lấy từ BE -->
+          <td class="px-3 py-2 text-right">
+            {{ o.itemsTotalQuantity ?? '—' }}
+          </td>
+
+          <td class="px-3 py-2 text-right">
+            <button class="px-2 py-1 border rounded" (click)="openDetail(o)">Chi tiết</button>
+          </td>
+        </tr>
+
+        <tr *ngIf="!loadingList && orders.length === 0">
+          <td colspan="8" class="px-3 py-3 text-center">Chưa có đơn hàng</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ========== MODAL CHI TIẾT (form nổi) ========== -->
+  <div *ngIf="showModal" class="fixed inset-0 z-50">
+    <!-- backdrop -->
+    <div class="absolute inset-0 bg-black/40" (click)="closeDetail()"></div>
+
+    <!-- dialog -->
+    <div class="absolute inset-0 flex items-start md:items-center justify-center p-3 md:p-6 overflow-y-auto">
+      <div class="w-full max-w-4xl bg-white rounded-2xl shadow-xl border">
+        <!-- header -->
+        <div class="flex items-center justify-between p-4 border-b">
+          <div class="font-semibold text-lg">
+            <ng-container *ngIf="selected as s; else loadingTitle">Đơn #{{ s.id }}</ng-container>
+            <ng-template #loadingTitle>Đang tải...</ng-template>
+          </div>
+          <button class="px-3 py-1.5 border rounded" (click)="closeDetail()">Đóng</button>
+        </div>
+
+        <!-- body -->
+        <div class="p-4">
+          <div *ngIf="loadingDetail" class="text-sm">Đang tải chi tiết...</div>
+
+          <div *ngIf="!loadingDetail && selected as s" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+            <!-- User: #userId + tên/email -->
+            <div>
+              <b>User:</b> #{{ s.userId || '—' }}
+              <span *ngIf="s.userFullName">({{ s.userFullName }})</span>
+              <span *ngIf="!s.userFullName && s.userEmail">({{ s.userEmail }})</span>
+            </div>
+
+            <div><b>Thanh toán:</b> {{ s.paymentMethod || '—' }} — {{ s.status || '—' }}</div>
+            <div><b>Tổng tiền:</b> {{ moneyStrToNum(s.totalAmount) | currency:'VND':'symbol':'1.0-0' }}</div>
+            <div><b>Giảm:</b> {{ moneyStrToNum(s.discountAmount) | currency:'VND':'symbol':'1.0-0' }}</div>
+            <div class="md:col-span-2">
+              <b>Người nhận:</b> {{ s.receiverName || '—' }} ({{ s.receiverPhone || '—' }})
+            </div>
+            <div class="md:col-span-2">
+              <b>Địa chỉ:</b>
+              {{ s.shipAddressLine1 || '' }}
+              {{ s.shipWard ? ', ' + s.shipWard : '' }}
+              {{ s.shipDistrict ? ', ' + s.shipDistrict : '' }}
+              {{ s.shipCity ? ', ' + s.shipCity : '' }}
+            </div>
+
+            <!-- bảng items -->
+            <div class="md:col-span-2 mt-2">
+              <div class="border rounded overflow-hidden">
+                <table class="w-full text-sm">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-3 py-2 text-left">Sản phẩm</th>
+                      <th class="px-3 py-2 text-left">SKU</th>
+                      <th class="px-3 py-2 text-right">Giá</th>
+                      <th class="px-3 py-2 text-right">SL</th>
+                      <th class="px-3 py-2 text-right">Thành tiền</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let it of s.items" class="border-t">
+                      <td class="px-3 py-2">{{ it.productName || ('#' + it.productId) }}</td>
+                      <td class="px-3 py-2">{{ it.sku || '—' }}</td>
+                      <td class="px-3 py-2 text-right">{{ moneyStrToNum(it.price) | currency:'VND':'symbol':'1.0-0' }}</td>
+                      <td class="px-3 py-2 text-right">{{ it.quantity || 0 }}</td>
+                      <td class="px-3 py-2 text-right">
+                        {{ moneyStrToNum(it.lineTotal) | currency:'VND':'symbol':'1.0-0' }}
+                      </td>
+                    </tr>
+                    <tr *ngIf="s.items.length === 0">
+                      <td colspan="5" class="px-3 py-3 text-center">Không có sản phẩm</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- payment -->
+            <div *ngIf="s.payment" class="md:col-span-2 mt-2 text-sm">
+              <b>Thanh toán:</b>
+              {{ s.payment.method }} — {{ s.payment.status }}
+              <span *ngIf="s.payment.transactionId">• Mã GD: {{ s.payment.transactionId }}</span>
+              <span *ngIf="s.payment.bankCode">• Ngân hàng: {{ s.payment.bankCode }}</span>
+              <span *ngIf="s.payment.paidAt">• Lúc: {{ s.payment.paidAt | date:'short' }}</span>
+              <div>Số tiền thanh toán:
+                <b>{{ moneyStrToNum(s.payment.amount) | currency:'VND':'symbol':'1.0-0' }}</b>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /body -->
+      </div>
+    </div>
+    <!-- /dialog -->
+  </div>
+  <!-- ========== /MODAL ========== -->
+</section>

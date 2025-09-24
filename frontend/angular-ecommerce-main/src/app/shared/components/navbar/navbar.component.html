@@ -1,0 +1,175 @@
+<header (document:click)="closeAll()">
+  <nav class="bg-white border-b border-gray-200">
+    <div class="max-w-screen-xl mx-auto px-4 flex items-center justify-between h-16 gap-6">
+      <!-- LOGO -->
+      <a routerLink="/" class="flex items-center space-x-3">
+        <img src="/logo.png" alt="Logo" class="h-10 md:h-12 w-auto" />
+      </a>
+
+      <!-- MAIN NAV (Desktop) -->
+      <ul class="hidden md:flex items-center gap-2 font-medium">
+        <li>
+          <a routerLink="/"
+             class="py-3 px-4 rounded-lg text-gray-900 hover:bg-gray-50 hover:text-yellow-600"
+             aria-current="page">Home</a>
+        </li>
+
+        <!-- Danh mục -->
+        <li class="relative">
+          <button type="button"
+                  class="flex items-center gap-2 py-3 px-4 rounded-lg text-gray-900 hover:bg-gray-50"
+                  aria-haspopup="menu"
+                  [attr.aria-expanded]="isCatOpen"
+                  (click)="toggleCat($event)">
+            Danh mục
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+
+          <ul *ngIf="isCatOpen"
+              class="absolute left-0 top-[110%] bg-white border rounded-xl shadow-lg mt-1 min-w-[220px] z-50 p-1">
+            <li>
+              <a routerLink="/products"
+                 class="block px-4 py-3 rounded-lg text-sm text-gray-700 hover:bg-gray-100">
+                Tất cả sản phẩm
+              </a>
+            </li>
+
+            <li *ngFor="let c of categories()">
+              <button (click)="goCategory(c); closeAll()"
+                      class="w-full text-left block px-4 py-3 rounded-lg text-sm text-gray-700 hover:bg-gray-100">
+                {{ c.name }}
+              </button>
+            </li>
+
+            <li *ngIf="!categories().length"
+                class="px-4 py-3 text-sm text-gray-400">
+              Đang tải...
+            </li>
+          </ul>
+        </li>
+
+        <li>
+          <a routerLink="/products"
+             class="py-3 px-4 rounded-lg text-gray-900 hover:bg-gray-50">Products</a>
+        </li>
+
+        <li>
+          <a routerLink="/gift-cards"
+             class="py-3 px-4 rounded-lg text-gray-900 hover:bg-gray-50">Gift Cards</a>
+        </li>
+      </ul>
+
+      <!-- RIGHT ACTIONS -->
+      <div class="flex items-center gap-2">
+        <!-- search -->
+        <button class="p-2 w-10 h-10 text-gray-600 rounded-xl hover:bg-gray-100 focus:ring-2 focus:ring-gray-200"
+                aria-label="Tìm kiếm">
+          <svg fill="currentColor" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8
+                     0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8
+                     40-122.7 40C93.1 416 0 322.9 0
+                     208S93.1 0 208 0S416 93.1 416 208zM208
+                     352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/>
+          </svg>
+        </button>
+
+        <!-- cart -->
+        <a routerLink="/cart"
+           class="p-2 w-10 h-10 text-gray-600 rounded-xl hover:bg-gray-100 focus:ring-2 focus:ring-gray-200"
+           aria-label="Giỏ hàng">
+          <svg fill="currentColor" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
+            <path d="M0 24C0 10.7 10.7 0 24
+                     0L69.5 0c22 0 41.5 12.8 50.6
+                     32l411 0c26.3 0 45.5 25 38.6
+                     50.4l-41 152.3c-8.5 31.4-37
+                     53.3-69.5 53.3l-288.5 0 5.4
+                     28.5c2.2 11.3 12.1 19.5
+                     23.6 19.5L488 336c13.3 0
+                     24 10.7 24 24s-10.7 24-24
+                     24l-288.3 0c-34.6 0-64.3-24.6-70.7-58.5L77.4
+                     54.5c-.7-3.8-4-6.5-7.9-6.5L24
+                     48C10.7 48 0 37.3 0 24zM128
+                     464a48 48 0 1 1 96 0 48 48
+                     0 1 1 -96 0zm336-48a48 48
+                     0 1 1 0 96 48 48 0 1 1 0-96z"/>
+          </svg>
+        </a>
+
+        <!-- Admin quick button -->
+        <a *ngIf="auth.isLoggedIn() && auth.isAdmin()"
+           routerLink="/dashboard"
+           class="hidden md:inline-flex px-4 py-2 text-sm font-medium text-white rounded-xl bg-gray-900 hover:bg-black">
+          Admin
+        </a>
+
+        <!-- Auth -->
+        <ng-container *ngIf="!auth.isLoggedIn(); else userMenu">
+          <a routerLink="/login"
+             class="px-4 py-2 text-sm font-medium text-gray-700 border rounded-xl hover:bg-gray-50">
+            Đăng nhập
+          </a>
+          <a routerLink="/register"
+             class="px-4 py-2 text-sm font-medium text-gray-700 border rounded-xl hover:bg-gray-50">
+            Đăng ký
+          </a>
+        </ng-container>
+
+        <!-- USER MENU -->
+        <ng-template #userMenu>
+          <div class="relative">
+            <button type="button"
+                    class="flex items-center gap-3 px-2 py-1 rounded-xl hover:bg-gray-100"
+                    aria-haspopup="menu"
+                    [attr.aria-expanded]="isUserOpen"
+                    (click)="toggleUser($event)">
+              <span class="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center text-sm font-semibold">
+                {{ initials() }}
+              </span>
+              <span class="hidden md:inline text-sm">{{ userName() }}</span>
+              <svg class="w-4 h-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd"
+                      d="M5.23 7.21a.75.75 0 011.06.02L10 11.19l3.71-3.96a.75.75 0 111.08 1.04l-4.25 4.53a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"
+                      clip-rule="evenodd"/>
+              </svg>
+            </button>
+
+            <div *ngIf="isUserOpen"
+                 class="absolute right-0 mt-2 w-56 rounded-xl border bg-white shadow-lg p-1 z-50">
+              <a *ngIf="auth.isAdmin()" routerLink="/dashboard"
+                 class="block px-4 py-3 text-sm rounded-lg hover:bg-gray-50">
+                Bảng điều khiển
+              </a>
+
+              <!-- 👉 Đơn hàng -->
+              <a routerLink="/orders"
+                 class="block px-4 py-3 text-sm rounded-lg hover:bg-gray-50">
+                Đơn hàng của tôi
+              </a>
+
+              <!-- 👉 Lịch sử thanh toán -->
+              <a routerLink="/payments"
+                 class="block px-4 py-3 text-sm rounded-lg hover:bg-gray-50">
+                Lịch sử thanh toán
+              </a>
+
+              <!-- Hồ sơ -->
+              <a routerLink="/profile"
+                 class="block px-4 py-3 text-sm rounded-lg hover:bg-gray-50">
+                Hồ sơ
+              </a>
+
+              <!-- Đăng xuất -->
+              <button (click)="auth.logout()"
+                      class="w-full text-left block px-4 py-3 text-sm rounded-lg hover:bg-gray-50">
+                Đăng xuất
+              </button>
+            </div>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </nav>
+</header>

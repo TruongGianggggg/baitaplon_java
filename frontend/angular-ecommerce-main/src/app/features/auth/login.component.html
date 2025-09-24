@@ -1,0 +1,63 @@
+<section class="min-h-[80vh] flex items-center justify-center px-4">
+  <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 bg-white rounded-2xl overflow-hidden shadow-lg border border-slate-200">
+
+    <!-- LEFT: FORM -->
+    <div class="p-10 md:p-14">
+      <h1 class="text-4xl font-extrabold text-slate-900 mb-10">Đăng nhập </h1>
+
+      <form [formGroup]="fm" (ngSubmit)="submit()" class="space-y-6">
+        <!-- Email -->
+        <div>
+          <input formControlName="email" type="email" placeholder="Email"
+                 class="w-full rounded-lg bg-slate-100 border border-slate-200 px-5 py-3 text-lg text-slate-800 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+        </div>
+
+        <!-- Password -->
+        <div>
+          <input formControlName="password" type="password" placeholder="Password"
+                 class="w-full rounded-lg bg-slate-100 border border-slate-200 px-5 py-3 text-lg text-slate-800 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+        </div>
+
+        <button type="submit"
+                class="w-full py-3 rounded-lg bg-emerald-600 text-white text-lg font-semibold hover:bg-emerald-700 transition disabled:opacity-60"
+                [disabled]="fm.invalid || loading">
+          {{ loading ? 'Đang đăng nhập...' : 'Signin' }}
+        </button>
+
+        <p *ngIf="error" class="text-sm text-red-600">{{ error }}</p>
+
+        <!-- Social -->
+        <div class="pt-2">
+          <p class="text-center text-sm text-slate-600 mb-3">or signin with</p>
+          <div class="flex items-center justify-center gap-6">
+            <button type="button" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 grid place-items-center">
+              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/facebook/facebook-original.svg" class="w-5 h-5" alt="fb">
+            </button>
+            <button type="button" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 grid place-items-center">
+              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" class="w-5 h-5" alt="gg">
+            </button>
+            <button type="button" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 grid place-items-center">
+              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg" class="w-5 h-5" alt="in">
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- RIGHT: WELCOME PANEL -->
+    <div class="p-10 md:p-14 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white flex items-center justify-center">
+      <div class="max-w-md text-center">
+        <h2 class="text-3xl font-extrabold mb-6">Welcome back!</h2>
+        <p class="text-white/90 leading-relaxed mb-10 text-lg">
+          Welcome back! We are so happy to have you here. It's great to see you again. We hope you
+          had a safe and enjoyable time away.
+        </p>
+        <a routerLink="/register"
+           class="inline-flex items-center justify-center px-8 py-3 text-lg rounded-full bg-white/20 hover:bg-white/25 transition">
+          Bạn chưa có tài khoản? Đăng ký ngay
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>

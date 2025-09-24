@@ -1,0 +1,9 @@
+<div class="rounded-lg bg-white/70 p-4 flex gap-4 items-center">
+  <img [src]="product.coverImage || '/assets/placeholder.png'"
+       [alt]="product.name || 'Offer'"
+       class="w-32 h-32 object-cover rounded">
+  <div>
+    <h4 class="font-bold text-xl">{{ product.name }}</h4>
+    <p class="text-slate-600">{{ (product.price ?? 0) | currency:'VND' }}</p>
+  </div>
+</div>

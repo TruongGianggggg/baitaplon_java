@@ -1,0 +1,116 @@
+<section class="max-w-screen-lg mx-auto px-4 py-6" *ngIf="!loading(); else loadingTpl">
+
+  <!-- Breadcrumb -->
+  <nav class="text-sm text-slate-600 mb-4">
+    <a routerLink="/" class="hover:underline">Home</a>
+    <span class="mx-2">/</span>
+    <a routerLink="/products" class="hover:underline">Products</a>
+    <span class="mx-2">/</span>
+    <span class="text-slate-800 font-medium">{{ p()?.name }}</span>
+  </nav>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Gallery -->
+    <div class="relative"
+         (mouseenter)="pauseAuto()" (mouseleave)="resumeAuto()"
+         (keydown)="onKeydown($event)" tabindex="0"
+         (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
+
+      <!-- Ảnh chính -->
+      <div class="relative overflow-hidden rounded-xl border bg-white select-none">
+        <img
+          [ngSrc]="activeImage()"
+          width="640" height="640"
+          alt="{{ p()?.name }}"
+          (load)="onMainImgLoad()"
+          (error)="onMainImgError($event)"
+          class="w-full aspect-square object-cover transition-opacity duration-300"
+          [class.opacity-100]="mainLoaded()"
+          [class.opacity-0]="!mainLoaded()"
+          draggable="false"
+        />
+
+        <!-- Nút Prev / Next -->
+        <button type="button"
+                (click)="prevImage(true)"
+                class="absolute left-2 top-1/2 -translate-y-1/2
+                       rounded-full bg-white/80 hover:bg-white
+                       border shadow p-2"
+                aria-label="Ảnh trước">‹</button>
+
+        <button type="button"
+                (click)="nextImage(true)"
+                class="absolute right-2 top-1/2 -translate-y-1/2
+                       rounded-full bg-white/80 hover:bg-white
+                       border shadow p-2"
+                aria-label="Ảnh tiếp">›</button>
+      </div>
+
+      <!-- Thumbnails -->
+      <div class="mt-3 flex gap-3 overflow-x-auto">
+        <button
+          type="button"
+          *ngFor="let url of images()"
+          (click)="onThumbClick(url)"
+          class="rounded-lg border p-1 focus:outline-none transition
+                 hover:border-emerald-400"
+          [class.border-emerald-600]="activeImage() === url"
+          aria-label="Chọn ảnh biến thể"
+        >
+          <img [ngSrc]="url" width="96" height="96"
+               class="w-20 h-20 object-cover rounded-md" alt="thumb" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div>
+      <h1 class="text-2xl md:text-3xl font-bold text-slate-900">{{ p()?.name }}</h1>
+
+      <div class="mt-2 text-sm text-slate-600">
+        <span class="font-mono">SKU: {{ p()?.sku }}</span>
+        <span *ngIf="p()?.category" class="ml-3">| Danh mục: <b>{{ p()?.category?.name }}</b></span>
+      </div>
+
+      <div class="mt-4">
+        <div class="text-2xl font-bold text-emerald-700">
+          {{ p()?.price | number }} {{ p()?.currency || 'VND' }}
+        </div>
+        <div *ngIf="p()?.previousPrice" class="text-slate-400 line-through mt-1">
+          {{ p()?.previousPrice | number }} {{ p()?.currency || 'VND' }}
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <span
+          class="px-2 py-1 rounded text-xs"
+          [class.bg-green-100]="inStock()" [class.text-green-700]="inStock()"
+          [class.bg-red-100]="!inStock()" [class.text-red-700]="!inStock()"
+        >
+          {{ inStock() ? ('Còn hàng (' + (p()?.stock || 0) + ')') : 'Hết hàng' }}
+        </span>
+      </div>
+
+      <div class="mt-5 flex flex-wrap items-center gap-3">
+        <button class="px-5 py-3 rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60"
+                [disabled]="!inStock()" (click)="addToCart()">
+          Thêm vào giỏ
+        </button>
+        <a routerLink="/" class="px-4 py-3 rounded-lg border hover:bg-slate-50">
+          ← Tiếp tục mua sắm
+        </a>
+      </div>
+
+      <div class="mt-6 prose max-w-none">
+        <h2 class="text-lg font-semibold">Mô tả sản phẩm</h2>
+        <p class="whitespace-pre-line text-slate-700">
+          {{ p()?.description || 'Đang cập nhật mô tả...' }}
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<ng-template #loadingTpl>
+  <div class="max-w-screen-lg mx-auto px-4 py-10 text-slate-500">Đang tải chi tiết sản phẩm…</div>
+</ng-template>

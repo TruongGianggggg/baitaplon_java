@@ -1,0 +1,55 @@
+<!-- src/app/features/auth/user/orders-page.component.html -->
+<section class="max-w-5xl mx-auto mt-8 p-6 bg-white border rounded-2xl">
+  <div class="flex items-center justify-between gap-4">
+    <h1 class="text-2xl font-bold">Đơn hàng của tôi</h1>
+    <a routerLink="/" class="text-sm text-blue-600 hover:underline">← Về trang chủ</a>
+  </div>
+
+  <div *ngIf="loading()" class="mt-6 text-gray-600">Đang tải đơn hàng...</div>
+
+  <div *ngIf="!loading() && error()" class="mt-6 p-3 bg-red-50 text-red-700 rounded">
+    {{ error() }}
+  </div>
+
+  <div *ngIf="!loading() && !error() && orders().length === 0" class="mt-6 text-gray-600">
+    Bạn chưa có đơn hàng nào.
+  </div>
+
+  <div *ngIf="!loading() && !error() && orders().length > 0" class="mt-6 overflow-x-auto">
+    <table class="min-w-full border rounded-lg">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-4 py-3 border-b text-left">Mã đơn</th>
+          <th class="px-4 py-3 border-b text-left">Ngày tạo</th>
+          <th class="px-4 py-3 border-b text-left">Trạng thái</th>
+          <th class="px-4 py-3 border-b text-right">Tổng tiền</th>
+          <th class="px-4 py-3 border-b text-right">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let o of orders()" class="hover:bg-gray-50">
+          <td class="px-4 py-3 border-b font-medium">{{ code(o) }}</td>
+
+          <td class="px-4 py-3 border-b">
+            {{ createdAt(o) | date:'short' }}
+          </td>
+
+          <td class="px-4 py-3 border-b">
+            <span class="px-2 py-1 rounded text-xs font-medium"
+                  [ngClass]="badge(status(o))">
+              {{ status(o) }}
+            </span>
+          </td>
+
+          <td class="px-4 py-3 border-b text-right">
+            {{ total(o) | currency:'VND':'symbol':'1.0-0' }}
+          </td>
+
+          <td class="px-4 py-3 border-b text-right">
+            <a [routerLink]="['/orders', o.id]" class="text-blue-600 hover:underline">Xem</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
